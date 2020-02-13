@@ -16,6 +16,5 @@ def get_spn(address):
         "featureMember"][0]["GeoObject"]
     toponym_upper_corner = list(map(float, toponym['boundedBy']['Envelope']['upperCorner'].split()))
     toponym_lower_corner = list(map(float, toponym['boundedBy']['Envelope']['lowerCorner'].split()))
-    delta1 = str(abs(toponym_lower_corner[0] - toponym_upper_corner[0]))
-    delta2 = str(abs(toponym_lower_corner[1] - toponym_upper_corner[1]))
-    return ','.join([delta1, delta2])
+    delta = abs(toponym_lower_corner[0] - toponym_upper_corner[0])
+    return delta

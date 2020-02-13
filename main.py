@@ -27,11 +27,9 @@ def load_map(toponym_to_find):
     toponym_coodrinates = toponym["Point"]["pos"].split()
     toponym_longitude, toponym_lattitude = toponym_coodrinates
 
-    delta = get_spn(toponym_to_find)
-
     map_params = {
         "ll": ",".join([toponym_longitude, toponym_lattitude]),
-        "spn": delta,
+        "spn": f'{delta:.3f},{delta:.3f}',
         "l": "map",
         "pt": f"{','.join(toponym_coodrinates)},pm2wtl",
         'size': '450,450'
@@ -40,12 +38,16 @@ def load_map(toponym_to_find):
     map_api_server = "http://static-maps.yandex.ru/1.x/"
     response = requests.get(map_api_server, params=map_params)
 
+    if not response:
+        print('Ошибка!')
+        exit(0)
+
     im = Image.open(BytesIO(response.content))
-    im.save('data/map.png')
+    im.save('map.png')
 
 
 def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
+    fullname = os.path.join('', name)
     image = pygame.image.load(fullname)
     if colorkey is not None:
         if colorkey == -1:
@@ -56,11 +58,18 @@ def load_image(name, colorkey=None):
     return image
 
 
+def update_map():
+    global image
+    load_map(address)
+    image = load_image('map.png')
+
+
 width, heigth = 450, 450
 screen = pygame.display.set_mode((width, heigth))
 clock = pygame.time.Clock()
 running = True
 address = " ".join(sys.argv[1:])
+delta = get_spn(address)
 load_map(address)
 image = load_image('map.png')
 
@@ -68,6 +77,15 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_PAGEUP]:
+            if delta > 0.001:
+                delta *= 0.5
+            update_map()
+        elif keys[pygame.K_PAGEDOWN]:
+            if delta < 0.8:
+                delta *= 1.5
+            update_map()
     screen.blit(image, (0, 0))
     pygame.display.flip()
     clock.tick(15)
