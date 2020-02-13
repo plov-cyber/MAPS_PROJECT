@@ -83,7 +83,7 @@ while running:
                 delta *= 0.5
             update_map()
         elif keys[pygame.K_PAGEDOWN]:
-            if delta < 0.8:
+            if delta < 10:
                 delta *= 1.5
             update_map()
     screen.blit(image, (0, 0))
