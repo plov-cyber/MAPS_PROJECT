@@ -41,11 +41,11 @@ def load_map(toponym_to_find):
     response = requests.get(map_api_server, params=map_params)
 
     im = Image.open(BytesIO(response.content))
-    im.save('data/map.png')
+    im.save('map.png')
 
 
 def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
+    fullname = os.path.join('', name)
     image = pygame.image.load(fullname)
     if colorkey is not None:
         if colorkey == -1:
