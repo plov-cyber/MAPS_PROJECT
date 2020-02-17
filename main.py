@@ -9,7 +9,7 @@ from get_delta import get_spn
 
 def initialize():
     global address, delta, coordinates, image
-    address = " ".join(sys.argv[1:])
+    address = 'Альметьевск'
     delta = get_spn(address)
 
     geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
@@ -35,7 +35,7 @@ def initialize():
         "ll": ",".join([str(i) for i in coordinates]),
         "spn": f'{delta:.3f},{delta:.3f}',
         "l": "map",
-        "pt": f"{','.join([str(i) for i in coordinates])},pm2wtl",
+        # "pt": f"{','.join([str(i) for i in coordinates])},pm2wtl",
         'size': '450,450'
     }
 
@@ -57,7 +57,7 @@ def load_map():
         "ll": ",".join([str(i) for i in coordinates]),
         "spn": f'{delta:.3f},{delta:.3f}',
         "l": "map",
-        "pt": f"{','.join([str(i) for i in coordinates])},pm2wtl",
+        # "pt": f"{','.join([str(i) for i in coordinates])},pm2wtl",
         'size': '450,450'
     }
 
@@ -106,6 +106,15 @@ while running:
             elif event.key == pygame.K_PAGEDOWN:
                 if delta < 10:
                     delta *= 1.5
+
+            if event.key == pygame.K_DOWN and -80 < coordinates[1] - delta:
+                coordinates[1] -= delta * 2
+            if event.key == pygame.K_UP and coordinates[1] + delta < 80:
+                coordinates[1] += delta * 2
+            if event.key == pygame.K_LEFT and -180 < coordinates[0] - delta:
+                coordinates[0] -= delta * 2
+            if event.key == pygame.K_RIGHT and coordinates[0] + delta < 180:
+                coordinates[0] += delta * 2
 
     load_map()
     screen.blit(image, (0, 0))
