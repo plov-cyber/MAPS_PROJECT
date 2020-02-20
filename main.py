@@ -108,13 +108,13 @@ while running:
                     delta *= 1.5
 
             if event.key == pygame.K_DOWN and -80 < coordinates[1] - delta:
-                coordinates[1] -= delta * 2
+                coordinates[1] -= delta / 2
             if event.key == pygame.K_UP and coordinates[1] + delta < 80:
-                coordinates[1] += delta * 2
+                coordinates[1] += delta / 2
             if event.key == pygame.K_LEFT and -180 < coordinates[0] - delta:
-                coordinates[0] -= delta * 2
+                coordinates[0] -= delta / 2
             if event.key == pygame.K_RIGHT and coordinates[0] + delta < 180:
-                coordinates[0] += delta * 2
+                coordinates[0] += delta / 2
 
     load_map()
     screen.blit(image, (0, 0))
