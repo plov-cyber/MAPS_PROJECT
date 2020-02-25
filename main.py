@@ -88,24 +88,27 @@ def load_image(name, colorkey=None):
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, y, cur_btn):
+    def __init__(self, y, activated, text):
         super().__init__(buttons)
-        self.image = pygame.Surface([20, 20])
-        self.cur_btn = cur_btn
         self.text = text
-        self.y = y
-        self.colour = colours[0]
+        self.image = pygame.Surface([20, 20])
+        self.image.set_colorkey((0, 0, 0))
+        self.activated = activated
+        self.colour = colours[self.activated]
         pygame.draw.circle(self.image, self.colour, (10, 10), 10)
         self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = 5, self.y - 10
+        self.rect.x, self.rect.y = 5, y
+
+    def update(self):
+        self.colour = colours[self.activated]
+        pygame.draw.circle(self.image, self.colour, (10, 10), 10)
 
 
-def draw_text(y):
-    btn_txt = ['Схема', 'Спутник', 'Гибрид']
-    font = pygame.font.Font(None, 18)
-    for text in btn_txt:
-        text = font.render(text, 1, (0, 0, 0))
-        screen.blit(text, (30, y - 10 // 2))
+def draw_text(text_y, texts):
+    font = pygame.font.Font(None, 25)
+    for i in range(len(texts)):
+        text = font.render(texts[i], 1, (0, 200, 0))
+        screen.blit(text, (30, text_y - 30 * i))
 
 
 width, height = 450, 450
@@ -117,19 +120,19 @@ image = None
 address = None
 delta = None
 coordinates = None
-colours = [(192, 192, 192), (128, 128, 128)]
 now_type = 0
+colours = [(150, 150, 150), (80, 80, 80)]
+btn_txt = ['Схема', 'Спутник', 'Гибрид']
+btn_types = {'Схема': 0,
+             'Спутник': 1,
+             'Гибрид': 2}
 map_types = {0: 'map',
              1: 'sat',
              2: 'sat,skl'}
 initialize()
 
-btn_txt = ['Схема', 'Спутник', 'Гибрид']
 for i in range(3):
-    if btn_txt[i] == 'Схема':
-        Button(435 - i * 30, 1)
-    else:
-        Button(435 - i * 30, 0)
+    Button(425 - i * 30, 1, btn_txt[i]) if i == 0 else Button(425 - i * 30, 0, btn_txt[i])
 
 while running:
     for event in pygame.event.get():
@@ -151,11 +154,19 @@ while running:
             if event.key == pygame.K_RIGHT and coordinates[0] + delta < 180:
                 coordinates[0] += delta
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            x, y = event.pos
+            for btn in buttons:
+                if btn.rect.collidepoint(event.pos):
+                    btn.activated = 1
+                    now_type = btn_types[btn.text]
+                    for btn2 in buttons:
+                        if btn2 != btn:
+                            btn2.activated = 0
 
     load_map()
+    buttons.update()
     screen.blit(image, (0, 0))
     buttons.draw(screen)
+    draw_text(425, btn_txt)
     pygame.display.flip()
     clock.tick(60)
 pygame.quit()
