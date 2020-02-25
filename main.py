@@ -6,13 +6,19 @@ import sys
 from io import BytesIO
 from get_delta import get_spn
 
+pygame.init()
 
-def load_map(toponym_to_find):
+
+def initialize():
+    global address, delta, coordinates, image
+    address = 'Альметьевск'
+    delta = get_spn(address)
+
     geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
 
     geocoder_params = {
         "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
-        "geocode": toponym_to_find,
+        "geocode": address,
         "format": "json"}
 
     response = requests.get(geocoder_api_server, params=geocoder_params)
@@ -24,14 +30,14 @@ def load_map(toponym_to_find):
     json_response = response.json()
     toponym = json_response["response"]["GeoObjectCollection"][
         "featureMember"][0]["GeoObject"]
-    toponym_coodrinates = toponym["Point"]["pos"].split()
-    toponym_longitude, toponym_lattitude = toponym_coodrinates
+
+    coordinates = [float(i) for i in toponym["Point"]["pos"].split()]
 
     map_params = {
-        "ll": ",".join([toponym_longitude, toponym_lattitude]),
+        "ll": ",".join([str(i) for i in coordinates]),
         "spn": f'{delta:.3f},{delta:.3f}',
         "l": "map",
-        "pt": f"{','.join(toponym_coodrinates)},pm2wtl",
+        # "pt": f"{','.join([str(i) for i in coordinates])},pm2wtl",
         'size': '450,450'
     }
 
@@ -44,6 +50,29 @@ def load_map(toponym_to_find):
 
     im = Image.open(BytesIO(response.content))
     im.save('map.png')
+    image = load_image('map.png')
+
+
+def load_map():
+    global image
+    map_params = {
+        "ll": ",".join([str(i) for i in coordinates]),
+        "spn": f'{delta:.3f},{delta:.3f}',
+        "l": map_types[now_type],
+        # "pt": f"{','.join([str(i) for i in coordinates])},pm2wtl",
+        'size': '450,450'
+    }
+
+    map_api_server = "http://static-maps.yandex.ru/1.x/"
+    response = requests.get(map_api_server, params=map_params)
+
+    if not response:
+        print('Ошибка!')
+        exit(0)
+
+    im = Image.open(BytesIO(response.content))
+    im.save('map.png')
+    image = load_image('map.png')
 
 
 def load_image(name, colorkey=None):
@@ -58,35 +87,75 @@ def load_image(name, colorkey=None):
     return image
 
 
-def update_map():
-    global image
-    load_map(address)
-    image = load_image('map.png')
+class Button(pygame.sprite.Sprite):
+    def __init__(self, y, cur_btn):
+        super().__init__(buttons)
+        self.image = pygame.Surface([20, 20])
+        self.cur_btn = cur_btn
+        self.text = text
+        self.y = y
+        self.colour = colours[0]
+        pygame.draw.circle(self.image, self.colour, (10, 10), 10)
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = 5, self.y - 10
 
 
-width, heigth = 450, 450
-screen = pygame.display.set_mode((width, heigth))
+def draw_text(y):
+    btn_txt = ['Схема', 'Спутник', 'Гибрид']
+    font = pygame.font.Font(None, 18)
+    for text in btn_txt:
+        text = font.render(text, 1, (0, 0, 0))
+        screen.blit(text, (30, y - 10 // 2))
+
+
+width, height = 450, 450
+screen = pygame.display.set_mode((width, height))
+buttons = pygame.sprite.Group()
 clock = pygame.time.Clock()
 running = True
-address = " ".join(sys.argv[1:])
-delta = get_spn(address)
-load_map(address)
-image = load_image('map.png')
+image = None
+address = None
+delta = None
+coordinates = None
+colours = [(192, 192, 192), (128, 128, 128)]
+now_type = 0
+map_types = {0: 'map',
+             1: 'sat',
+             2: 'sat,skl'}
+initialize()
+
+btn_txt = ['Схема', 'Спутник', 'Гибрид']
+for i in range(3):
+    if btn_txt[i] == 'Схема':
+        Button(435 - i * 30, 1)
+    else:
+        Button(435 - i * 30, 0)
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_PAGEUP]:
-            if delta > 0.001:
-                delta *= 0.5
-            update_map()
-        elif keys[pygame.K_PAGEDOWN]:
-            if delta < 10:
-                delta *= 1.5
-            update_map()
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_PAGEUP:
+                if delta > 0.002:
+                    delta *= 0.5
+            elif event.key == pygame.K_PAGEDOWN:
+                if delta < 10:
+                    delta *= 1.5
+            if event.key == pygame.K_DOWN and -80 < coordinates[1] - delta:
+                coordinates[1] -= delta
+            if event.key == pygame.K_UP and coordinates[1] + delta < 80:
+                coordinates[1] += delta
+            if event.key == pygame.K_LEFT and -180 < coordinates[0] - delta:
+                coordinates[0] -= delta
+            if event.key == pygame.K_RIGHT and coordinates[0] + delta < 180:
+                coordinates[0] += delta
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            x, y = event.pos
+
+    load_map()
     screen.blit(image, (0, 0))
+    buttons.draw(screen)
     pygame.display.flip()
-    clock.tick(15)
+    clock.tick(60)
 pygame.quit()
