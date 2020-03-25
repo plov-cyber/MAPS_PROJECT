@@ -24,8 +24,8 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>390</y>
-      <width>82</width>
+      <y>380</y>
+      <width>60</width>
       <height>17</height>
      </rect>
     </property>
@@ -40,8 +40,8 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>410</y>
-      <width>82</width>
+      <y>400</y>
+      <width>70</width>
       <height>17</height>
      </rect>
     </property>
@@ -56,8 +56,8 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>430</y>
-      <width>82</width>
+      <y>420</y>
+      <width>60</width>
       <height>17</height>
      </rect>
     </property>
@@ -81,10 +81,75 @@
      <string/>
     </property>
    </widget>
+   <widget class="QLabel" name="lbl_address">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>430</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Адрес: </string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="postalcode">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>420</y>
+      <width>170</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Показать почтовый индекс</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>4</y>
+      <width>451</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>1</number>
+     </property>
+     <item>
+      <widget class="QLineEdit" name="obj_address">
+       <property name="placeholderText">
+        <string>Введите адрес</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="search">
+       <property name="text">
+        <string>Искать</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="delete_mark">
+       <property name="text">
+        <string>Сбросить отметку</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
    <zorder>image</zorder>
+   <zorder>layoutWidget</zorder>
    <zorder>hybrid</zorder>
    <zorder>sat</zorder>
    <zorder>scheme</zorder>
+   <zorder>lbl_address</zorder>
+   <zorder>postalcode</zorder>
   </widget>
  </widget>
  <resources/>
