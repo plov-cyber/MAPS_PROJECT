@@ -143,6 +143,19 @@
      </item>
     </layout>
    </widget>
+   <widget class="QLabel" name="org">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>431</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Организация: </string>
+    </property>
+   </widget>
    <zorder>image</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>hybrid</zorder>
@@ -150,6 +163,7 @@
    <zorder>scheme</zorder>
    <zorder>lbl_address</zorder>
    <zorder>postalcode</zorder>
+   <zorder>org</zorder>
   </widget>
  </widget>
  <resources/>

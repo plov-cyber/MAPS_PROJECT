@@ -5,6 +5,7 @@ from PyQt5 import uic
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from get_delta import get_spn
+from lonlat_distance import lonlat_distance
 
 
 class Map(QMainWindow):
@@ -18,11 +19,13 @@ class Map(QMainWindow):
         self.now_type = 2
         self.geo_server = "http://geocode-maps.yandex.ru/1.x/"
         self.map_server = "http://static-maps.yandex.ru/1.x/"
+        self.org_server = "http://search-maps.yandex.ru/v1/"
         self.delta = None
         self.full_address = ''
         self.postal_code = ''
         self.coordinates = None
         self.geo_params = None
+        self.org_params = None
         self.map_params = None
         self.mark = None
 
@@ -97,6 +100,7 @@ class Map(QMainWindow):
     def delete_object(self):
         self.mark = None
         self.lbl_address.setText('Адрес: ')
+        self.org.setText('Организация: ')
         self.full_address = ''
         self.postal_code = ''
         self.load_map()
@@ -122,7 +126,11 @@ class Map(QMainWindow):
         if event.button() == Qt.LeftButton:
             self.coordinates[0] += ((event.x() - 225.5) / 225.5) * (self.delta / 2)
             self.coordinates[1] += ((225.5 - event.y()) / 225.5) * (self.delta / 2)
-        self.find_address()
+            self.find_address()
+        elif event.button() == Qt.RightButton:
+            self.coordinates[0] += ((event.x() - 225.5) / 225.5) * (self.delta / 2)
+            self.coordinates[1] += ((225.5 - event.y()) / 225.5) * (self.delta / 2)
+            self.find_organisation()
         self.load_map(new_address=True)
 
     def find_address(self):
@@ -140,6 +148,52 @@ class Map(QMainWindow):
         toponym = json_response["response"]["GeoObjectCollection"][
             "featureMember"][0]["GeoObject"]
         self.address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
+
+    def find_organisation(self):
+        self.geo_params = {
+            "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+            "geocode": ",".join(list(map(str, self.coordinates))),
+            "format": "json"
+        }
+        response = requests.get(self.geo_server, params=self.geo_params)
+        if not response:
+            print('Ошибка при нахождении заданного адреса!')
+            exit(0)
+
+        json_response = response.json()
+        toponym = json_response["response"]["GeoObjectCollection"][
+            "featureMember"][0]["GeoObject"]
+        search_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
+
+        self.org_params = {
+            "apikey": "dda3ddba-c9ea-4ead-9010-f43fbc15c6e3",
+            "text": search_address,
+            "lang": "ru_RU",
+            # "ll": ",".join(list(map(str, self.coordinates))),
+            "type": "biz"
+        }
+
+        response = requests.get(self.org_server, params=self.org_params)
+        if not response:
+            print('Ошибка при нахождении заданного адреса!')
+            exit(0)
+
+        json_response = response.json()
+        org = json_response["features"]
+        if org:
+            org = org[0]
+        else:
+            print('Организаций не найдено!')
+
+        self.address = org['properties']['CompanyMetaData']['address']
+        org_name = org["properties"]["CompanyMetaData"]["name"]
+        point = ','.join(str(i) for i in org["geometry"]["coordinates"])
+        distance = int(lonlat_distance([float(i) for i in point.split(',')], self.coordinates))
+        print(distance)
+        if distance <= 50:
+            self.org.setText('Организация: ' + org_name)
+        else:
+            self.org.setText('Организация: ')
 
 
 if __name__ == "__main__":
